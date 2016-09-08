@@ -9,6 +9,7 @@ class Nca_model extends CI_Model
 	{
 		parent::__construct();
 		$this->db = $this->load->database('default', true);
+		SeasLog::setLogger('z.com');
 	}
 	
 	/**
@@ -82,13 +83,9 @@ class Nca_model extends CI_Model
 	{
 		foreach ($nca as $k => $n)
 		{
-			try
+			if (!$this->db->insert('z_nca', $n))
 			{
-				$this->db->insert('z_nca', $n);
-			}
-			catch (Exception $e)
-			{
-				seaslog::error($e->getMessage());
+				Seaslog::error($this->db->last_query().' | '.$this->db->error()['message']);
 			}
 		}
 	}
