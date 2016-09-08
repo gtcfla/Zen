@@ -12,6 +12,9 @@ class Welcome extends CI_Controller {
 	
 	public function index()
 	{
+		$this->load->model('Nca_model', 'nca');
+		$nca = $this->nca->regexNca(__DIR__);
+		$this->nca->__updateNca($nca);
 		$this->load->view('welcome_message');
 	}
 }

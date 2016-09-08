@@ -2,10 +2,52 @@
 class Nca_model extends CI_Model
 {
 	private $db;
+	// NCA正则匹配表达式
+	private $regex = ['/class\s(.+?)\sextends/i', '/public function\s([^_]+?)\(.+?\{(.+?)\}/', '/data\[\'title\'\]\s*=\s*\'(.+?)\'/'];
+	
 	function __construct()
 	{
 		parent::__construct();
 		$this->db = $this->load->database('default', true);
+	}
+	
+	/**
+	 * 正则匹配NCA
+	 * @param 匹配目录 $dir
+	 * @return return array
+	 * @author zen <gtcfla@gmail.com> 2016年9月8日
+	 */
+	public function regexNca($dir)
+	{
+		$this->load->helper('directory');
+		$files_map = directory_map($dir);
+		$nca = [];
+		foreach ($files_map as $fm)
+		{
+			$file_content = php_strip_whitespace($dir.'/'.$fm);
+			preg_match_all($this->regex[0], $file_content, $class);
+			
+			if(isset($class[1][0]))
+			{
+				$controller = strtolower($class[1][0]);
+				preg_match_all($this->regex[1], $file_content, $function);
+				if(isset($function[1]))
+				{
+					foreach ($function[1] as $key => $action)
+					{
+						$action = strtolower($action);
+						preg_match_all($this->regex[2], $function[2][$key], $title);
+						$desc = empty($title[1]) ? '' : $title[1][0];
+						$nca[$controller.'/'.$action] = [
+							'controller' => $controller,
+							'action' => $action,
+							'desc' => $desc
+						];
+					}
+				}
+			}
+		}
+		return $nca;
 	}
 	
 	/**
@@ -34,55 +76,20 @@ class Nca_model extends CI_Model
 	/**
 	 * 更新所有NCA
 	 * @param array $nca
-	 * @return return array()
 	 * @author zen <gtcfla@gmail.com> 2016年9月6日
 	 */
-	public function updateNca($nca)
+	public function __updateNca($nca)
 	{
-		$nca_old = $this->db->query('SELECT * FROM nca WHERE action!=\'\'')->result_array();
-		$nca_in_db = array();
-		foreach ($nca_old as $no)
+		foreach ($nca as $k => $n)
 		{
-			$nca_in_db[$no['controller'] . '_' . $no['action']] = $no;
-		}
-		$create_nca = array_diff_key($nca_in_file, $nca_in_db);
-		$delete_nca = array_diff_key($nca_in_db, $nca_in_file);
-		$update_nca = array_diff_key($nca_in_file, $create_nca);
-		$ignore_role_controller = array('api', 'login');
-		foreach ($create_nca as $cn)
-		{
-			$controller_in_db = $this->db->get_where('nca', array('controller' => $cn['controller'], 'action' => ''))->row_array();
-			if (!$controller_in_db)
+			try
 			{
-				$controller = array(
-					'role_access_control' => in_array($cn['controller'], $ignore_role_controller) ? 'ACL_EVERYONE' : 'ACL_NULL',
-					'controller' => $cn['controller'],
-					'action' => '',
-					'name' => $cn['controller'],
-					'descript' => ''
-				);
-				$this->db->insert('nca', $controller);
-				unset($controller,$controller_in_db);
+				$this->db->insert('z_nca', $n);
 			}
-			$action = array(
-				'role_access_control' => in_array($cn['controller'], $ignore_role_controller) ? 'ACL_EVERYONE' : 'ACL_NULL',
-				'controller' => $cn['controller'],
-				'action' => $cn['action'],
-				'name' => $cn['descript'],
-				'descript' => $cn['descript']
-			);
-			$this->db->insert('nca', $action);
-			unset($action);
+			catch (Exception $e)
+			{
+				seaslog::error($e->getMessage());
+			}
 		}
-		foreach ($delete_nca as $dn)
-		{
-			$this->db->delete('nca', array('id' => $dn['id']));
-		}
-		foreach ($update_nca as $un)
-		{
-			$update = $this->db->get_where('nca', array('controller' => $un['controller'], 'action' => $un['action'], 'name!=' => $un['descript']))->row_array();
-			if (!empty($update['id'])) $this->db->update('nca', array('name' => $un['descript'], 'descript' => $un['descript']), array('id' => $update['id']));
-		}
-		return array('ack' => true, 'msg' => '');
 	}
 }
