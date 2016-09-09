@@ -81,12 +81,7 @@ class Nca_model extends CI_Model
 	 */
 	public function __updateNca($nca)
 	{
-		foreach ($nca as $k => $n)
-		{
-			if (!$this->db->insert('z_nca', $n))
-			{
-				Seaslog::error($this->db->last_query().' | '.$this->db->error()['message']);
-			}
-		}
+		$this->db->insert_batch('z_nca', $nca);
+		if (!empty($this->db->error()['message'])) SeasLog::error($this->db->last_query() . ' | ' . $this->db->error()['message']);
 	}
 }
