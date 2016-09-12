@@ -1,15 +1,21 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Login extends CI_Controller {
+class Login extends CI_Controller
+{
 	
-	public function index()
+	public function index ()
 	{
 		$data['title'] = 'ZEN - 登录';
+		$this->load->helper('url');
+		$data['csrf'] = array(
+			'name' => $this->security->get_csrf_token_name(),
+			'hash' => $this->security->get_csrf_hash()
+		);
 		$this->load->view('login', $data);
 	}
 	
-	public function check()
+	public function check ()
 	{
 		$data['title'] = 'ZEN - 登录验证';
 		$this->load->helper(array('form'));
@@ -18,6 +24,7 @@ class Login extends CI_Controller {
 		$this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]', array('required' => '密码必填', 'min_length' => '密码长度不合法'));
 		if ($this->form_validation->run())
 		{
+			var_dump($this->input->post());
 			echo 'ok';
 		}
 		else

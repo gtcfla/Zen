@@ -3,7 +3,7 @@ class Nca_model extends CI_Model
 {
 	private $db;
 	// NCA正则匹配表达式
-	private $regex = ['/class\s(.+?)\sextends/i', '/public function\s([^_]+?)\(.+?\{(.+?)\}/', '/data\[\'title\'\]\s*=\s*\'(.+?)\'/'];
+	private $regex = ['/class\s(.+?)\sextends/i', '/public function\s(.+?)\(.+?\{(.+?)\}/', '/data\[\'title\'\]\s*=\s*\'(.+?)\'/'];
 	
 	function __construct()
 	{
@@ -31,6 +31,9 @@ class Nca_model extends CI_Model
 			if(isset($class[1][0]))
 			{
 				$controller = strtolower($class[1][0]);
+				$namespace = explode('_', $controller);
+				$controller = $namespace[0];
+				$namespace = empty($namespace[1]) ? '' : $namespace[1];
 				preg_match_all($this->regex[1], $file_content, $function);
 				if(isset($function[1]))
 				{
@@ -39,10 +42,11 @@ class Nca_model extends CI_Model
 						$action = strtolower($action);
 						preg_match_all($this->regex[2], $function[2][$key], $title);
 						$desc = empty($title[1]) ? '' : $title[1][0];
-						$nca[$controller.'/'.$action] = [
-							'controller' => $controller,
-							'action' => $action,
-							'desc' => $desc
+						$nca[] = [
+							'namespace' => trim($namespace), 
+							'controller' => trim($controller),
+							'action' => trim($action),
+							'desc' => trim($desc)
 						];
 					}
 				}
@@ -81,7 +85,10 @@ class Nca_model extends CI_Model
 	 */
 	public function __updateNca($nca)
 	{
-		$this->db->insert_batch('z_nca', $nca);
-		if (!empty($this->db->error()['message'])) SeasLog::error($this->db->last_query() . ' | ' . $this->db->error()['message']);
+		foreach ($nca as $n)
+		{
+			$this->db->insert('z_nca', $n);
+			if (!empty($this->db->error()['message'])) SeasLog::error($this->db->last_query() . ' | ' . $this->db->error()['message']);
+		}
 	}
 }

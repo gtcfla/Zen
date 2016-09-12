@@ -844,3 +844,37 @@ if ( ! function_exists('function_usable'))
 		return FALSE;
 	}
 }
+
+// ------------------------------------------------------------------------
+
+/**
+ * 输出变量的内容
+ *
+ * 可以使用 dump() 这个简写形式。
+ *
+ * @code php
+ * dump($var);
+ * @endcode
+ *
+ * @param mixed $var 要输出的变量
+ */
+
+if ( ! function_exists('dump'))
+{
+	function dump($var)
+	{
+		if (ini_get('html_errors'))
+		{
+			$content = "<pre>\n";
+			$content .= htmlspecialchars(print_r($var, true));
+			$content .= "\n</pre>\n";
+		}
+		else
+		{
+			$content = "\n";
+			$content .= print_r($var, true) . "\n";
+		}
+		echo $content;
+		return null;
+	}
+}
