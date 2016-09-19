@@ -48,10 +48,8 @@
 									</div>
 								</div>
 							</div>
-							
 					</div>
 					<div class="foot">
-						<input type="hidden" name="<?=$csrf['name'];?>" value="<?=$csrf['hash'];?>" />
 						<button class="btn btn-primary" data-dismiss="modal" type="submit">登录</button>
 					</div>
 				</form>

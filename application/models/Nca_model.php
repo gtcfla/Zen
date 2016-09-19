@@ -9,7 +9,7 @@ class Nca_model extends CI_Model
 	{
 		parent::__construct();
 		$this->db = $this->load->database('default', true);
-		SeasLog::setLogger('z.com');
+		SeasLog::setLogger('z.com'); // 设置日志保存路径
 	}
 	
 	/**
@@ -18,7 +18,7 @@ class Nca_model extends CI_Model
 	 * @return return array
 	 * @author zen <gtcfla@gmail.com> 2016年9月8日
 	 */
-	public function regexNca($dir)
+	public function regex_nca($dir)
 	{
 		$this->load->helper('directory');
 		$files_map = directory_map($dir);
@@ -56,39 +56,100 @@ class Nca_model extends CI_Model
 	}
 	
 	/**
-	 * 更新单个NCA
-	 * @param int $nca_id
-	 * @param array $data
-	 */
-	public function updateNcaById($nca_id, $data)
-	{
-		$check_in_db = self::getOne(array('id' => $nca_id));
-		if (empty($check_in_db)) return array('ack' => false, 'msg' => 'nca id error');
-		if (empty($check_in_db['action']) && $check_in_db['controller'])
-		{
-			//检测当前C的action是否为空，是则删除当前C
-			$check_child  = self::getOne(array('controller' => $check_in_db['controller'], 'action!=' => ''));
-			if (!$check_child)
-			{
-				$this->db->delete('nca', array('id' => $nca_id));
-				return array('ack' => true, 'msg' => '');
-			}
-		}
-		$this->db->update('nca', $data, array('id' => $nca_id));
-		return array('ack' => true, 'msg' => '');
-	}
-	
-	/**
 	 * 更新所有NCA
 	 * @param array $nca
 	 * @author zen <gtcfla@gmail.com> 2016年9月6日
 	 */
-	public function __updateNca($nca)
+	public function _update_nca($nca)
 	{
 		foreach ($nca as $n)
 		{
 			$this->db->insert('z_nca', $n);
 			if (!empty($this->db->error()['message'])) SeasLog::error($this->db->last_query() . ' | ' . $this->db->error()['message']);
 		}
+	}
+	
+	/**
+	 * 刷新ACL权限
+	 * @return number
+	 * @return true/false
+	 * @author zen <gtcfla@gmail.com> 2016年9月15日
+	 */
+	public function refresh_acl()
+	{
+		$nca = $this->db->get_where('z_nca')->result_array();
+		$this->config->load('sysconfig', true);
+		$config = $this->config->item('sysconfig')['role_access_control'];
+		foreach ($nca as $n)
+		{
+			if ($n['role_access_control'])
+			{
+				$acl[$n['controller']]['actions'][$n['action']]['allow'] = $config[$n['role_access_control']];
+			}
+			else
+			{
+				$mapping = $this->db->select('z_user_role.user_id')->join('z_acl', 'z_acl.role_id=z_user_role.role_id')->get_where('z_user_role', ['z_acl.nca_id =' => $n['id']])->result_array();
+				$roles =[];
+				foreach ($mapping as $m)
+				{
+					$roles[$m['user_id']] = $m['user_id'];
+				}
+				$roles = implode(',', $roles);
+				$acl[$n['controller']]['actions']['all_actions']['allow'] = '1';
+				$acl[$n['controller']]['actions'][$n['action']]['allow'] = $roles ?  '1,'.$roles : '1';
+			}
+		}
+		if ($acl)
+		{
+			$acl_filename = APPPATH.'config/acl.php';
+			return file_put_contents($acl_filename, "<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');\n\$config['acl'] = " . var_export($acl, true) . ';');
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public function update_acl($nca_ids, $role_ids)
+	{
+		if (is_array($role_ids))
+		{
+			$acl = $this->db->get_where('z_acl', ['nca_id' => $nca_ids])->result_array();
+			$old_acl = [];
+			foreach ($acl as $a)
+			{
+				$old_acl[] = $a['role_id'];
+			}
+			$acl_create = array_diff($role_ids, $old_acl);
+			$acl_delete = array_diff($old_acl, $role_ids);
+			foreach ($acl_create as $ac)
+			{
+				$this->db->insert('z_acl', ['nca_id' => $nca_ids, 'role_id' => $ac]);
+			}
+			foreach ($acl_delete as $ad)
+			{
+				$this->db->delete('z_acl', ['nca_id' => $nca_ids, 'role_id' => $ad]);
+			}
+		}
+		else
+		{
+			$acl = $this->db->get_where('z_acl', ['role_id' => $role_ids])->result_array();
+			$old_acl = array();
+			foreach ($acl as $a)
+			{
+				$old_acl[] = $a['nca_id'];
+			}
+			$acl_create = array_diff($nca_ids, $old_acl);
+			$acl_delete = array_diff($old_acl, $nca_ids);
+			foreach ($acl_create as $ac)
+			{
+				$this->db->insert('z_acl', ['nca_id' => $ac, 'role_id' => $role_ids]);
+			}
+			foreach ($acl_delete as $ad)
+			{
+				$this->db->delete('z_acl', ['nca_id' => $ad, 'role_id' => $role_ids]);
+			}
+		}
+		return ['ack' => true, 'msg' => ''];
 	}
 }

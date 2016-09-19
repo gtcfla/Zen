@@ -878,3 +878,34 @@ if ( ! function_exists('dump'))
 		return null;
 	}
 }
+
+// ------------------------------------------------------------------------
+
+if ( ! function_exists('show_message'))
+{
+	function show_message($msg, $ack = true, $heading = '提示信息')
+	{
+		$templates_path = VIEWPATH.'message.php';
+		ob_start();
+		include($templates_path);
+		$buffer = ob_get_contents();
+		ob_end_clean();
+		echo $buffer;
+		exit;
+	}
+}
+
+if ( ! function_exists('redirect_message'))
+{
+	function redirect_message($message='', $ack=false, $url='')
+	{
+		$url = $url ? $url : $_SERVER['HTTP_REFERER'];
+		$templates_path = VIEWPATH.'redirect_message.php';
+		ob_start();
+		include($templates_path);
+		$buffer = ob_get_contents();
+		ob_end_clean();
+		echo $buffer;
+		exit;
+	}
+}

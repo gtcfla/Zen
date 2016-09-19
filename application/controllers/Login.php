@@ -3,33 +3,35 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Login extends CI_Controller
 {
-	
-	public function index ()
+	public function index()
 	{
 		$data['title'] = 'ZEN - 登录';
-		$this->load->helper('url');
-		$data['csrf'] = array(
-			'name' => $this->security->get_csrf_token_name(),
-			'hash' => $this->security->get_csrf_hash()
-		);
+		if (isset($_SESSION[SESSION_KEY])) redirect('welcome/index');
 		$this->load->view('login', $data);
 	}
 	
-	public function check ()
+	public function check()
 	{
 		$data['title'] = 'ZEN - 登录验证';
-		$this->load->helper(array('form'));
 		$this->load->library('form_validation');
-		$this->form_validation->set_rules('username', 'Username', 'trim|required|min_length[2]|max_length[50]', array('required' => '账号必填', 'min_length' => '账号长度不合法'));
-		$this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[6]', array('required' => '密码必填', 'min_length' => '密码长度不合法'));
-		if ($this->form_validation->run())
+		if ($this->form_validation->run('login'))
 		{
-			var_dump($this->input->post());
-			echo 'ok';
+			$this->load->model('DB_model', 'db');
+			$result = $this->db->get_one('z_user', ['name' => $this->input->post('username'), 'password' => md5($this->input->post('password').SESSION_KEY)]);
+			if ($result)
+			{
+				$this->session->set_tempdata(SESSION_KEY, ['uid' => $result['id'], 'name' => $result['name']], 3600*24);
+				exit(json_encode(['ack' => true, 'msg' => '登录验证成功', 'url' => site_url('welcome/index')]));
+			}
+			exit(json_encode(['ack' => false, 'msg' => '用户名或密码有误']));
 		}
-		else
-		{
-			exit(json_encode(array('ack' => false, 'msg' => validation_errors())));
-		}
+		exit(json_encode(['ack' => false, 'msg' => validation_errors()]));
+	}
+	
+	public function logout()
+	{
+		$data['title'] = '注销';
+		$this->session->sess_destroy();
+		redirect('login/index');
 	}
 }

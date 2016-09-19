@@ -26,11 +26,12 @@ class Rbac
 		//包含qeephp框架的acl.php权限控制文件
 		$this->CI->load->library('acl');
 		get_class(new ACL());
-		$roles = empty($this->CI->session->userdata['yyft']['userid']) ? '' : $this->CI->session->userdata['yyft']['userid'];
+		$roles = isset($_SESSION[SESSION_KEY]['uid']) ? $_SESSION[SESSION_KEY]['uid'] : NULL;
 		
-		$this->CI->config->load('acl_bypass', true);
-		$skip_acl = $this->CI->config->item('acl_bypass');
-		if (!$this->_authorized($roles, $this->URI) && !$this->_skipACL($this->URI, $skip_acl))
+		//记录访问日志
+		SeasLog::info($roles . ' | ' . $_SERVER['REMOTE_ADDR'] . ' | ' . $_SERVER['REQUEST_METHOD'] . ' | ' . $_SERVER['REQUEST_URI'] . ' | ' . json_encode($_POST));
+		
+		if (!$this->_authorized($roles, $this->URI))
         {
             $this->_on_access_denied($roles);
         }
@@ -40,13 +41,7 @@ class Rbac
 	{
 		$this->CI->load->model('Nca_model');
 		$result = $this->CI->Nca_model->refreshACL();
-		if (empty($result)) show_error('刷新权限文件失败，请联系技术人员');
-	}
-	
-	protected function _skipACL($uri, $skip_acl)
-	{
-		if (in_array($uri['controller'], $skip_acl['controller'])) return true;
-		if (isset($skip_acl['action'][$uri['controller']]) && $skip_acl['action'][$uri['controller']] == $uri['action']) return true;
+		if (empty($result)) show_error('权限失效');
 	}
 	
 	protected function _authorized($roles, $uri)
@@ -88,13 +83,12 @@ class Rbac
 	
 	protected function _on_access_denied($roles)
 	{
-		if (empty($roles)) redirect(site_url('login/index'));
-		$redirect_url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : site_url('login/index');
-		show_error('当前用户没有访问这个页面的权限，<a href="' . $redirect_url . '">点击返回</a>');exit;
+		if (empty($roles)) redirect('login/index');
+		show_error('访问权限不足');exit;
 	}
 	
 	protected function _db_error()
 	{
-		show_error('DB_error()');exit;
+		show_error('db error');exit;
 	}
 }
