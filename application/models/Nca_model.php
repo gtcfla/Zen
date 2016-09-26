@@ -152,4 +152,45 @@ class Nca_model extends CI_Model
 		}
 		return ['ack' => true, 'msg' => ''];
 	}
+	
+	public function update_nca_by_uid($uid)
+	{
+		$where = ['show' => 1, 'controller!=' => 'login'];
+		$nca = $this->db->get_where('z_nca', $where)->result_array();
+		$this_user_nca = [];
+		foreach ($nca as $n)
+		{
+			$all_nca[$n['id']] = $n;
+		}
+		if ($uid == 1) // 超级管理员
+		{
+			foreach ($all_nca as $an)
+			{
+				if ($an['action'] == 'index')
+				{
+					$this_user_nca[$an['controller']]['name'] = $an['desc'];
+					$this_user_nca[$an['controller']]['param'] = $an['param'];
+				}
+				$this_user_nca[$an['controller']]['child'][$an['action']]['name'] = $an['desc'];
+			}
+		}
+		else
+		{
+			$acl = $this->db->query('SELECT z_acl.nca_id FROM z_acl LEFT JOIN z_user_role ON z_user_role.role_id=z_acl.role_id WHERE z_user_role.user_id=?', [$uid])->result_array();
+			$this_user_actions = array_intersect_key($all_nca, array_flip(array_column($acl, 'nca_id')));
+			foreach ($this_user_actions as $tua)
+			{
+				if ($tua['action'] == 'index')
+				{
+					$this_user_nca[$tua['controller']]['name'] = $tua['desc'];
+					$this_user_nca[$an['controller']]['param'] = $an['param'];
+				}
+				$this_user_nca[$tua['controller']]['child'][$tua['action']]['name'] = $tua['desc'];
+			}
+		}
+		if ($this->cache->memcached->is_supported())
+		{
+			$this->cache->memcached->save(Z_NCA.$uid, $this_user_nca, 100);
+		}
+	}
 }

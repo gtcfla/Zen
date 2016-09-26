@@ -2,15 +2,16 @@
 <div class="cl-navblock">
 <div class="menu-space">
   <div class="content">
-    <div class="side-user">
-      <div class="avatar"><img src="images/avatar1_50.jpg" alt="Avatar" /></div>
-      <div class="info">
-	<a href="#"><?php echo $_SESSION[SESSION_KEY]['name'];?></a>
-	<img src="images/state_online.png" alt="Status" /> <span>在线</span>
-      </div>
-    </div>
     <ul class="cl-vnavigation">
-
+    <?php foreach ($this->cache->memcached->get(Z_NCA.UID) as $kc => $c):?>
+      <li><a href="<?php echo site_url($kc.'/index')?>"><i class="fa <?php echo $c['param']?>"></i><span><?php echo $c['name']?></span></a>
+		<ul class="sub-menu">
+		  <?php foreach ($c['child'] as $ka => $a):?>
+		  <li class="<?php echo ($kc == $this->uri->segment(1) && $ka == $this->uri->segment(2)) ? 'active' : '' ?>"><a href="<?php echo site_url($kc.'/'.$ka)?>"><?php echo $a['name']?></a></li>
+		  <?php endforeach;?>
+		</ul>
+      </li>
+    <?php endforeach;?>
     </ul>
   </div>
 </div>

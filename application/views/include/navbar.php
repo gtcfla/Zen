@@ -7,7 +7,7 @@
       </div>
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
-          <li class="<?php if (empty($_GET['namespace']))echo 'active';?>"><a href="#">主页</a></li>
+          <li class="<?php if ($this->uri->segment(1) == 'welcome')echo 'active';?>"><a href="/"><i class="fa fa-home"></i> 主页</a></li>
         </ul>
     <ul class="nav navbar-nav navbar-right user-nav">
       <li class="dropdown profile_menu">

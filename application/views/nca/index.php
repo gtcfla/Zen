@@ -8,6 +8,7 @@
 	<div class="form-group">
 		<label><input type="text" class="form-control" placeholder="Controller" name="controller" value="<?php echo $this->input->get('controller');?>"></label>
 		<label><input type="text" class="form-control" placeholder="Action" name="action" value="<?php echo $this->input->get('action');?>"></label>
+		<label><input type="text" class="form-control" placeholder="参数" name="param" value="<?php echo $this->input->get('param');?>"></label>
         <label><button type="submit" class="btn btn-primary btn-rad">查询</button></label>
         <label><input type="button" class="btn" id="btn" value="保存修改" /></label>
     </div>

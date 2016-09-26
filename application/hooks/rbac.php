@@ -27,20 +27,29 @@ class Rbac
 		$this->CI->load->library('acl');
 		get_class(new ACL());
 		$roles = isset($_SESSION[SESSION_KEY]['uid']) ? $_SESSION[SESSION_KEY]['uid'] : NULL;
+		define('UID', $roles);
 		
 		//记录访问日志
-		SeasLog::info($roles . ' | ' . $_SERVER['REMOTE_ADDR'] . ' | ' . $_SERVER['REQUEST_METHOD'] . ' | ' . $_SERVER['REQUEST_URI'] . ' | ' . json_encode($_POST));
+		SeasLog::info(UID . ' | ' . $_SERVER['REMOTE_ADDR'] . ' | ' . $_SERVER['REQUEST_METHOD'] . ' | ' . $_SERVER['REQUEST_URI'] . ' | ' . json_encode($_POST));
 		
-		if (!$this->_authorized($roles, $this->URI))
+		//权限授权校检
+		if (!$this->_authorized(UID, $this->URI))
         {
-            $this->_on_access_denied($roles);
+            $this->_on_access_denied(UID);
         }
+        
+        //导航栏自动化展示
+//         if ($roles && !$this->CI->cache->memcached->get(Z_NCA.UID))
+//         {
+        	$this->CI->load->model('Nca_model', 'nca');
+        	$this->CI->nca->update_nca_by_uid(UID);
+//         }
 	}
 	
 	protected function _refreshACL()
 	{
-		$this->CI->load->model('Nca_model');
-		$result = $this->CI->Nca_model->refreshACL();
+		$this->CI->load->model('Nca_model', 'nca');
+		$result = $this->CI->nca->refresh_acl();
 		if (empty($result)) show_error('权限失效');
 	}
 	

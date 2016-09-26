@@ -90,3 +90,4 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 defined('CURRENT_DATETIME')    OR define('CURRENT_DATETIME', date('Y-m-d H:i:s'));
 defined('CURRENT_TIMESTAMP')   OR define('CURRENT_TIMESTAMP', time());
 defined('SESSION_KEY')         OR define('SESSION_KEY', 'z_sess_udata');
+defined('Z_NCA')               OR define('Z_NCA', 'z_nca_');

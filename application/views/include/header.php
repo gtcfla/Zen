@@ -31,7 +31,7 @@
 		<?php require_once 'navbar.php';?>
 	</div>
 
-	<div id="cl-wrapper" class="fixed-menu">
+	<div id="cl-wrapper" class="fixed-menu sb-collapsed">
 		<div class="cl-sidebar">
 			<?php require_once 'sidebar.php';?>
 		</div>
