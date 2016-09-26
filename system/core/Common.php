@@ -848,6 +848,49 @@ if ( ! function_exists('function_usable'))
 // ------------------------------------------------------------------------
 
 /**
+ * 对字符串或数组进行格式化，返回格式化后的数组
+ *
+ * $input 参数如果是字符串，则首先以“,”为分隔符，将字符串转换为一个数组。
+ * 接下来对数组中每一个项目使用 trim() 方法去掉首尾的空白字符。最后过滤掉空字符串项目。
+ *
+ * 该方法的主要用途是将诸如：“item1, item2, item3” 这样的字符串转换为数组。
+ *
+ * @code php
+ * $input = 'item1, item2, item3';
+ * $output = Q::normalize($input);
+ * // $output 现在是一个数组，结果如下：
+ * // $output = array(
+ * //   'item1',
+ * //   'item2',
+ * //   'item3',
+ * // );
+ *
+ * $input = 'item1|item2|item3';
+ * // 指定使用什么字符作为分割符
+ * $output = Q::normalize($input, '|');
+ * @endcode
+ *
+ * @param array|string $input 要格式化的字符串或数组
+ * @param string $delimiter 按照什么字符进行分割
+ *
+ * @return array 格式化结果
+ */
+if ( ! function_exists('normalize'))
+{
+	function normalize($input, $delimiter = ',')
+	{
+		if (!is_array($input))
+		{
+			$input = explode($delimiter, $input);
+		}
+		$input = array_map('trim', $input);
+		return array_filter($input, 'strlen');
+	}
+}
+
+// ------------------------------------------------------------------------
+
+/**
  * 输出变量的内容
  *
  * 可以使用 dump() 这个简写形式。
