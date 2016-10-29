@@ -11,7 +11,7 @@ class Nca extends CI_Controller
 		$where = [];
 		if ($this->input->get('controller')) $where['controller'] = $this->input->get('controller');
 		if ($this->input->get('action')) $where['action'] = $this->input->get('action');
-		if ($this->input->get('param')) $where['param'] = $this->input->get('param');
+		if ($this->input->get('desc')) $where['desc'] = $this->input->get('desc');
 		$this->load->model('DB_model', 'db');
 		$result = $this->db->search('z_nca', $where, $config['per_page']=10, $index);
 		$data['nca'] = $result['data'];

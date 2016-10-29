@@ -10,6 +10,27 @@ class DB_model extends CI_Model
 		SeasLog::setLogger('z.com');
 	}
 	
+	public function t()
+	{
+		$this->db->query('INSERT INTO sequence VALUES(0);');
+		return $this->db->insert_id();
+// 		$this->db->query('CALL t_sequence(@code);');
+// 		$this->db->trans_start();
+// 		$sn = $this->db->query('select nextval(\'o\') as sn;')->row_array();
+// // 		$this->db->query('INSERT INTO sequence VALUES(0);');
+// 		$order_sn = 'O'.date('ymd').sprintf('%06d', $sn['sn']);
+// 		$this->db->query('INSERT INTO t_orders(`no`) VALUES(\''.$order_sn.'\')');
+// 		$this->db->trans_complete();
+	}
+	
+	public function call_function($name)
+	{
+		echo 123;
+		$this->db->call_function('nextval', 'o');
+		echo $this->db->last_query();
+		exit;
+	}
+	
 	public function query($sql, $where=[])
 	{
 		return $this->db->query($sql, $where);

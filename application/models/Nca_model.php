@@ -9,7 +9,7 @@ class Nca_model extends CI_Model
 	{
 		parent::__construct();
 		$this->db = $this->load->database('default', true);
-		SeasLog::setLogger('z.com'); // 设置日志保存路径
+// 		SeasLog::setLogger('z.com'); // 设置日志保存路径
 	}
 	
 	/**

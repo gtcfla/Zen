@@ -30,7 +30,7 @@ class Rbac
 		define('UID', $roles);
 		
 		//记录访问日志
-		SeasLog::info(UID . ' | ' . $_SERVER['REMOTE_ADDR'] . ' | ' . $_SERVER['REQUEST_METHOD'] . ' | ' . $_SERVER['REQUEST_URI'] . ' | ' . json_encode($_POST));
+// 		SeasLog::info(UID . ' | ' . $_SERVER['REMOTE_ADDR'] . ' | ' . $_SERVER['REQUEST_METHOD'] . ' | ' . $_SERVER['REQUEST_URI'] . ' | ' . json_encode($_POST));
 		
 		//权限授权校检
 		if (!$this->_authorized(UID, $this->URI))
