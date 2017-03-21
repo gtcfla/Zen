@@ -218,7 +218,7 @@ $config['log_threshold'] = 1;
 | application/logs/ directory. Use a full server path with trailing slash.
 |
 */
-$config['log_path'] = '/proj/logs/z.com/';
+$config['log_path'] = '';
 
 /*
 |--------------------------------------------------------------------------
@@ -361,10 +361,11 @@ $config['encryption_key'] = '';
 | except for 'cookie_prefix' and 'cookie_httponly', which are ignored here.
 |
 */
-$config['sess_driver'] = 'files';
+$config['sess_driver'] = 'redis';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_expiration'] = 7200;
-$config['sess_save_path'] = NULL;
+$config['sess_save_path'] = 'tcp://localhost:6379';
+//$config['sess_save_path'] = 'tcp://127.0.0.1:6379?auth=xxxx&database=sss&prefix=prefix&timeout=1200';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
 $config['sess_regenerate_destroy'] = FALSE;
