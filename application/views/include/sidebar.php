@@ -3,7 +3,7 @@
 <div class="menu-space">
   <div class="content">
     <ul class="cl-vnavigation">
-    <?php foreach ($this->cache->memcached->get(Z_NCA.UID) as $kc => $c):?>
+    <?php foreach ($this->cache->memcached->is_supported() ? $this->cache->memcached->get(Z_NCA.UID) : $_SESSION[Z_NCA.UID] as $kc => $c):?>
       <li><a href="<?php echo site_url($kc.'/index')?>"><i class="fa <?php echo $c['param']?>"></i><span><?php echo $c['name']?></span></a>
 		<ul class="sub-menu">
 		  <?php foreach ($c['child'] as $ka => $a):?>
